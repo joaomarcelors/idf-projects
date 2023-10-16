@@ -1,18 +1,18 @@
 {
-  "C_Cpp.intelliSenseEngine": "Tag Parser",
-  "idf.adapterTargetName": "esp32",
-  "files.associations": {
-    "*.tcc": "c",
-    "optional": "c",
-    "istream": "c",
-    "ostream": "c",
-    "ratio": "c",
-    "system_error": "c",
-    "array": "c",
-    "functional": "c",
-    "regex": "c",
-    "tuple": "c",
-    "type_traits": "c",
-    "utility": "c"
-  }
+    "C_Cpp.intelliSenseEngine": "default",
+    "idf.adapterTargetName": "esp32",
+    "idf.customExtraPaths": "/home/joaom/.espressif/tools/xtensa-esp-elf-gdb/12.1_20221002/xtensa-esp-elf-gdb/bin:/home/joaom/.espressif/tools/riscv32-esp-elf-gdb/12.1_20221002/riscv32-esp-elf-gdb/bin:/home/joaom/.espressif/tools/xtensa-esp32-elf/esp-12.2.0_20230208/xtensa-esp32-elf/bin:/home/joaom/.espressif/tools/xtensa-esp32s2-elf/esp-12.2.0_20230208/xtensa-esp32s2-elf/bin:/home/joaom/.espressif/tools/xtensa-esp32s3-elf/esp-12.2.0_20230208/xtensa-esp32s3-elf/bin:/home/joaom/.espressif/tools/riscv32-esp-elf/esp-12.2.0_20230208/riscv32-esp-elf/bin:/home/joaom/.espressif/tools/esp32ulp-elf/2.35_20220830/esp32ulp-elf/bin:/home/joaom/.espressif/tools/openocd-esp32/v0.12.0-esp32-20230419/openocd-esp32/bin:/home/joaom/.espressif/tools/esp-rom-elfs/20230320",
+    "idf.customExtraVars": {
+        "OPENOCD_SCRIPTS": "/home/joaom/.espressif/tools/openocd-esp32/v0.12.0-esp32-20230419/openocd-esp32/share/openocd/scripts",
+        "ESP_ROM_ELF_DIR": "/home/joaom/.espressif/tools/esp-rom-elfs/20230320/"
+    },
+    "idf.espIdfPath": "/home/joaom/esp/esp-idf",
+    "idf.openOcdConfigs": [
+        "board/esp32-bridge.cfg"
+    ],
+    "idf.pythonBinPath": "/home/joaom/.espressif/python_env/idf5.2_py3.10_env/bin/python",
+    "idf.toolsPath": "/home/joaom/.espressif",
+    "files.associations": {
+        "mcp23017.h": "c"
+    }
 }
