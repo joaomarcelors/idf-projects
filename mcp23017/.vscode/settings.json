@@ -13,6 +13,16 @@
     "idf.pythonBinPath": "/home/joaom/.espressif/python_env/idf5.2_py3.10_env/bin/python",
     "idf.toolsPath": "/home/joaom/.espressif",
     "files.associations": {
-        "mcp23017.h": "c"
+        "mcp23017.h": "c",
+        "i2c_master.h": "c",
+        "*.tcc": "c",
+        "ratio": "c",
+        "system_error": "c",
+        "array": "c",
+        "functional": "c",
+        "regex": "c",
+        "tuple": "c",
+        "type_traits": "c",
+        "utility": "c"
     }
 }

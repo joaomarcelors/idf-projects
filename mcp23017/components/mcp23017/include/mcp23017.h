@@ -8,7 +8,11 @@
 #ifndef _MCP23017_H_
 #define _MCP23017_H_
 
+#include <stdio.h>
 #include "i2c_bus.h"
+#include "esp_log.h"
+
+static const char *TAG = "MCP23017";
 
 #define MCP23017_I2C_ADDRESS_DEFAULT   (0x20)           /*!< 0100A2A1A0+R/W */
 
@@ -19,12 +23,29 @@
 #define ACK_VAL                         0x0             /*!< I2C ack value */
 #define NACK_VAL                        0x1             /*!< I2C nack value */
 
+#define I2C_MASTER_SCL_IO           22          /*!< gpio number for I2C master clock IO21*/
+#define I2C_MASTER_SDA_IO           21          /*!< gpio number for I2C master data  IO15*/
+#define I2C_MASTER_NUM              I2C_NUM_1   /*!< I2C port number for master dev */
+#define I2C_MASTER_TX_BUF_DISABLE   0           /*!< I2C master do not need buffer */
+#define I2C_MASTER_RX_BUF_DISABLE   0           /*!< I2C master do not need buffer */
+#define I2C_MASTER_FREQ_HZ          100000      /*!< I2C master clock frequency */
+
 typedef void* mcp23017_handle_t;                        /*!< handle of mcp23017 */
 
 typedef enum {
     MCP23017_GPIOA = 0x00, /*!< GPIO Port A */
     MCP23017_GPIOB,        /*!< GPIO Port B */
 } mcp23017_gpio_port_t; /*!< GPIO Port Type */
+
+typedef enum {
+    MCP23017_GPIO_MODE_OUTPUT = 0x00,        /*!< GPIO Mode OUTPUT*/
+    MCP23017_GPIO_MODE_INPUT = 0x01, /*!< GPIO Mode INPUT*/
+} mcp23017_gpio_mode_t; /*!< GPIO Mode Type */
+
+typedef enum {
+    MCP23017_GPIO_LOW = 0x00, /*!< GPIO LOW State*/
+    MCP23017_GPIO_HIGH = 0x01,        /*!< GPIO HiGH State*/
+} mcp23017_gpio_state_t; /*!< GPIO State Type */
 
 typedef enum {
     MCP23017_NOPIN = 0x0000,  /*!< GPIO Pin Num */
@@ -47,10 +68,18 @@ typedef enum {
     MCP23017_ALLPINS = 0xFFFF,  /*!< GPIO Pin Num */
 } mcp23017_pin_t; /*!< GPIO Pin Num Type, include all ports*/
 
+static i2c_bus_handle_t i2c_bus = NULL;
+static mcp23017_handle_t dev = NULL;
+static uint8_t io_set_dir_a = 0xff; //All input
+static uint8_t io_set_dir_b = 0xff; //All input
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+esp_err_t mcp23017_init();
+esp_err_t mcp23017_deinit();
 
 /**
  * @brief Create a MCP23017 device
@@ -146,7 +175,7 @@ esp_err_t mcp23017_set_seque_mode(mcp23017_handle_t dev, uint8_t isSeque);
  *     - ESP_FAIL Fail
  *     - ESP_ERR_INVALID_ARG Parameter error
  */
-esp_err_t mcp23017_set_pullup(mcp23017_handle_t dev, uint16_t pins);
+esp_err_t mcp23017_set_pullup(uint16_t pins);
 
 /**
  * @brief gets the interrupt capture values for pins with interrupts enabled,
@@ -197,6 +226,8 @@ esp_err_t mcp23017_check_present(mcp23017_handle_t dev);
 esp_err_t mcp23017_mirror_interrupt(mcp23017_handle_t dev, uint8_t mirror,
         mcp23017_gpio_port_t gpio);
 
+esp_err_t mcp23017_set_gpio_level(mcp23017_pin_t gpio_num, mcp23017_gpio_state_t level);
+
 /**
  * @brief write output value of GPIOA,(work in output)
  *
@@ -209,8 +240,9 @@ esp_err_t mcp23017_mirror_interrupt(mcp23017_handle_t dev, uint8_t mirror,
  *     - ESP_FAIL Fail
  *     - ESP_ERR_INVALID_ARG Parameter error
  */
-esp_err_t mcp23017_write_io(mcp23017_handle_t dev, uint8_t value,
-        mcp23017_gpio_port_t gpio);
+esp_err_t mcp23017_write_io(uint8_t value, mcp23017_gpio_port_t gpio);
+
+uint8_t mcp23017_get_gpio_level(mcp23017_pin_t gpio_num);
 
 /**
  * @brief read value of REG_GPIOA/REG_GPIOB;Reflects the logic level on pin <7: 0>
@@ -221,7 +253,13 @@ esp_err_t mcp23017_write_io(mcp23017_handle_t dev, uint8_t value,
  * @return
  *     - uint8_t value of level
  */
-uint8_t mcp23017_read_io(mcp23017_handle_t dev, mcp23017_gpio_port_t gpio);
+uint8_t mcp23017_read_io(mcp23017_gpio_port_t gpio);
+
+void mcp23017_set_all_gpio_dir(mcp23017_gpio_mode_t mode);
+
+void mcp23017_set_all_gpio_level(mcp23017_gpio_state_t level);
+
+esp_err_t mcp23017_set_gpio_dir(mcp23017_pin_t gpio_num, mcp23017_gpio_mode_t mode);
 
 /**
  * @brief set Direction of GPIOA;Set the logic level on pin <7: 0>, 0 - output, 1 - input,
@@ -235,8 +273,7 @@ uint8_t mcp23017_read_io(mcp23017_handle_t dev, mcp23017_gpio_port_t gpio);
  *     - ESP_FAIL Fail
  *     - ESP_ERR_INVALID_ARG Parameter error
  */
-esp_err_t mcp23017_set_io_dir(mcp23017_handle_t dev, uint8_t value,
-        mcp23017_gpio_port_t gpio);
+esp_err_t mcp23017_set_io_dir(uint8_t value, mcp23017_gpio_port_t gpio);
 
 #ifdef __cplusplus
 }
