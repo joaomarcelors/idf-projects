@@ -40,6 +40,7 @@ typedef enum {
 typedef enum {
     MCP23017_GPIO_MODE_OUTPUT = 0x00,        /*!< GPIO Mode OUTPUT*/
     MCP23017_GPIO_MODE_INPUT = 0x01, /*!< GPIO Mode INPUT*/
+    MCP23017_GPIO_MODE_INPUT_PULLUP = 0x02, /*!< GPIO Mode INPUT_PULLUP*/
 } mcp23017_gpio_mode_t; /*!< GPIO Mode Type */
 
 typedef enum {
@@ -273,7 +274,7 @@ esp_err_t mcp23017_set_gpio_dir(mcp23017_pin_t gpio_num, mcp23017_gpio_mode_t mo
  *     - ESP_FAIL Fail
  *     - ESP_ERR_INVALID_ARG Parameter error
  */
-esp_err_t mcp23017_set_io_dir(uint8_t value, mcp23017_gpio_port_t gpio);
+esp_err_t mcp23017_set_io_dir(uint8_t value, mcp23017_gpio_mode_t mode, mcp23017_gpio_port_t gpio);
 
 #ifdef __cplusplus
 }

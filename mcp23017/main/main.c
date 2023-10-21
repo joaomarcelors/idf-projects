@@ -14,8 +14,8 @@ void app_main(void){
     // TEST_ASSERT(ESP_OK == mcp23017_set_io_dir(device, 0xff, MCP23017_GPIOB));
 
    // mcp23017_set_io_dir(0x00, MCP23017_GPIOB);
-    mcp23017_set_all_gpio_dir(MCP23017_GPIO_MODE_INPUT);
-    mcp23017_set_pullup(0xf);
+    mcp23017_set_all_gpio_dir(MCP23017_GPIO_MODE_INPUT_PULLUP);
+    //mcp23017_set_pullup(0xf);
     // mcp23017_set_gpio_dir(0, MCP23017_GPIO_MODE_OUTPUT);
     // mcp23017_set_gpio_dir(1, MCP23017_GPIO_MODE_OUTPUT);
     // mcp23017_set_gpio_dir(8, MCP23017_GPIO_MODE_OUTPUT);

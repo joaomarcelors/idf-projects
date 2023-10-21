@@ -323,11 +323,11 @@ esp_err_t mcp23017_mirror_interrupt(mcp23017_handle_t dev, uint8_t mirror,
 void mcp23017_set_all_gpio_dir(mcp23017_gpio_mode_t mode){
 
     if(mode == MCP23017_GPIO_MODE_OUTPUT){
-        mcp23017_set_io_dir(0x00, MCP23017_GPIOA);
-        mcp23017_set_io_dir(0x00, MCP23017_GPIOB);
-    }else if(mode == MCP23017_GPIO_MODE_INPUT){
-        mcp23017_set_io_dir(0xff, MCP23017_GPIOA);
-        mcp23017_set_io_dir(0xff, MCP23017_GPIOB);
+        mcp23017_set_io_dir(0x00, mode, MCP23017_GPIOA);
+        mcp23017_set_io_dir(0x00, mode, MCP23017_GPIOB);
+    }else if(mode == MCP23017_GPIO_MODE_INPUT || mode == MCP23017_GPIO_MODE_INPUT_PULLUP){
+        mcp23017_set_io_dir(0xff, mode, MCP23017_GPIOA);
+        mcp23017_set_io_dir(0xff, mode, MCP23017_GPIOB);
     }
 }
 
@@ -376,19 +376,39 @@ esp_err_t mcp23017_set_gpio_dir(mcp23017_pin_t gpio_num, mcp23017_gpio_mode_t mo
         }else{
             ESP_LOGW(TAG, "ja setado");
         }
+    }else if(mode == MCP23017_GPIO_MODE_INPUT_PULLUP){
+        if(!((1 << gpio_num) & io_set_dir_a)){ //0b00000010 & 0b11111111
+            ESP_LOGW(TAG, "não setado ainda");
+            ESP_LOGW(TAG, "io_set_dir_a: %d",io_set_dir_a);
+            ESP_LOGW(TAG, "mode << gpio_num: %d",(1 << gpio_num));
+            io_set_dir_a = io_set_dir_a + (1 << gpio_num);
+            ESP_LOGW(TAG, "new value: %d",io_set_dir_a);
+
+            return i2c_bus_write_byte(p_device->i2c_dev,
+                                    (gpio_port == MCP23017_GPIOA) ?
+                                    MCP23017_REG_GPPUA : MCP23017_REG_GPPUB, io_set_dir_a);
+        }else{
+            ESP_LOGW(TAG, "ja setado");
+        }
     }
 
     return ESP_OK;
 }
 
-esp_err_t mcp23017_set_io_dir(uint8_t value, mcp23017_gpio_port_t gpio)
+esp_err_t mcp23017_set_io_dir(uint8_t value, mcp23017_gpio_mode_t mode, mcp23017_gpio_port_t gpio)
 {
     MCP23017_CHECK(dev != NULL, "invalid arg", ESP_ERR_INVALID_ARG)
     mcp23017_dev_t *p_device = (mcp23017_dev_t *) dev;
 
-    return i2c_bus_write_byte(p_device->i2c_dev,
-                               (gpio == MCP23017_GPIOA) ?
-                               MCP23017_REG_IODIRA : MCP23017_REG_IODIRB, value);
+    if(mode == MCP23017_GPIO_MODE_INPUT_PULLUP){
+        return i2c_bus_write_byte(p_device->i2c_dev,
+                                (gpio == MCP23017_GPIOA) ?
+                                MCP23017_REG_GPPUA : MCP23017_REG_GPPUB, value);
+    }else{
+        return i2c_bus_write_byte(p_device->i2c_dev,
+                                (gpio == MCP23017_GPIOA) ?
+                                MCP23017_REG_IODIRA : MCP23017_REG_IODIRB, value);
+    }
 }
 
 esp_err_t mcp23017_set_gpio_level(mcp23017_pin_t gpio_num, mcp23017_gpio_state_t level){
