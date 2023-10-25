@@ -1,9 +1,3 @@
-/*
- * SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-
 #include "mcp23017.h"
 
 #define MCP23017_PORT_A_BYTE(x)         (x & 0xFF)                      //get pin of GPIOA
@@ -136,8 +130,7 @@ esp_err_t mcp23017_delete(mcp23017_handle_t *p_dev)
     return ESP_OK;
 }
 
-esp_err_t mcp23017_write(mcp23017_handle_t dev, uint8_t reg_start_addr,
-                         uint8_t reg_num, uint8_t *data_buf)
+esp_err_t mcp23017_write(uint8_t reg_start_addr, uint8_t reg_num, uint8_t *data_buf)
 {
     MCP23017_CHECK(dev != NULL && data_buf != NULL, "invalid arg", ESP_ERR_INVALID_ARG)
     esp_err_t ret = ESP_FAIL;
@@ -175,11 +168,10 @@ esp_err_t mcp23017_read(mcp23017_handle_t dev, uint8_t reg_start_addr,
 esp_err_t mcp23017_set_pullup(uint16_t pins)
 {
     uint8_t data[] = { MCP23017_PORT_A_BYTE(pins), MCP23017_PORT_B_BYTE(pins) };
-    return mcp23017_write(dev, MCP23017_REG_GPIOA, sizeof(data), data); //set REG_GPIOA(); REG_GPIOB();
+    return mcp23017_write(MCP23017_REG_GPIOA, sizeof(data), data); //set REG_GPIOA(); REG_GPIOB();
 }
 
-esp_err_t mcp23017_interrupt_en(mcp23017_handle_t dev, uint16_t pins,
-                                bool intr_mode, uint16_t defaultValue)
+esp_err_t mcp23017_interrupt_en(uint16_t pins, bool intr_mode, uint16_t defaultValue)
 {
     MCP23017_CHECK(dev != NULL, "invalid arg", ESP_ERR_INVALID_ARG)
     mcp23017_dev_t *p_device = (mcp23017_dev_t *) dev;
@@ -190,7 +182,7 @@ esp_err_t mcp23017_interrupt_en(mcp23017_handle_t dev, uint16_t pins,
     if (!intr_mode) {
         uint8_t data1[] = { 0, 0, 0, 0 };
 
-        if (mcp23017_write(dev, MCP23017_REG_DEFVALA, sizeof(data1),
+        if (mcp23017_write(MCP23017_REG_DEFVALA, sizeof(data1),
                            data1) == ESP_FAIL) {
             return ESP_FAIL;
         }
@@ -200,13 +192,13 @@ esp_err_t mcp23017_interrupt_en(mcp23017_handle_t dev, uint16_t pins,
                             MCP23017_PORT_B_BYTE(pins)
                           };
 
-        if (mcp23017_write(dev, MCP23017_REG_DEFVALA, sizeof(data1),
+        if (mcp23017_write(MCP23017_REG_DEFVALA, sizeof(data1),
                            data1) == ESP_FAIL) {
             return ESP_FAIL;
         }
     }
 
-    if (mcp23017_write(dev, MCP23017_REG_GPINTENA, sizeof(data),
+    if (mcp23017_write(MCP23017_REG_GPINTENA, sizeof(data),
                        data) == ESP_FAIL) {
         return ESP_FAIL;
     }
@@ -215,7 +207,7 @@ esp_err_t mcp23017_interrupt_en(mcp23017_handle_t dev, uint16_t pins,
     return ESP_OK;
 }
 
-esp_err_t mcp23017_interrupt_disable(mcp23017_handle_t dev, uint16_t pins)
+esp_err_t mcp23017_interrupt_disable(uint16_t pins)
 {
     MCP23017_CHECK(dev != NULL, "invalid arg", ESP_ERR_INVALID_ARG)
     mcp23017_dev_t *p_device = (mcp23017_dev_t *) dev;
@@ -224,7 +216,7 @@ esp_err_t mcp23017_interrupt_disable(mcp23017_handle_t dev, uint16_t pins)
                        MCP23017_PORT_B_BYTE(p_device->intEnabledPins & ~pins)
                      };
 
-    if (mcp23017_write(dev, MCP23017_REG_GPINTENA, sizeof(data),
+    if (mcp23017_write(MCP23017_REG_GPINTENA, sizeof(data),
                        data) == ESP_FAIL) {
         return ESP_FAIL;
     }
@@ -233,8 +225,7 @@ esp_err_t mcp23017_interrupt_disable(mcp23017_handle_t dev, uint16_t pins)
     return ESP_OK;
 }
 
-esp_err_t mcp23017_set_interrupt_polarity(mcp23017_handle_t dev,
-        mcp23017_gpio_port_t gpio, uint8_t chLevel)
+esp_err_t mcp23017_set_interrupt_polarity(mcp23017_gpio_port_t gpio, uint8_t chLevel)
 {
     MCP23017_CHECK(dev != NULL, "invalid arg", ESP_ERR_INVALID_ARG)
     mcp23017_dev_t *p_device = (mcp23017_dev_t *) dev;
@@ -264,7 +255,7 @@ esp_err_t mcp23017_set_interrupt_polarity(mcp23017_handle_t dev,
     return i2c_bus_write_byte(p_device->i2c_dev, setIOCON[0], setIOCON[1]);
 }
 
-esp_err_t mcp23017_set_seque_mode(mcp23017_handle_t dev, uint8_t isSeque)
+esp_err_t mcp23017_set_seque_mode(uint8_t isSeque)
 {
     MCP23017_CHECK(dev != NULL, "invalid arg", ESP_ERR_INVALID_ARG)
     mcp23017_dev_t *p_device = (mcp23017_dev_t *) dev;
@@ -288,8 +279,7 @@ esp_err_t mcp23017_set_seque_mode(mcp23017_handle_t dev, uint8_t isSeque)
     return i2c_bus_write_byte(p_device->i2c_dev, setIOCON[0], setIOCON[1]);
 }
 
-esp_err_t mcp23017_mirror_interrupt(mcp23017_handle_t dev, uint8_t mirror,
-                                    mcp23017_gpio_port_t gpio)
+esp_err_t mcp23017_mirror_interrupt(uint8_t mirror, mcp23017_gpio_port_t gpio)
 {
     MCP23017_CHECK(dev != NULL, "invalid arg", ESP_ERR_INVALID_ARG)
     mcp23017_dev_t *p_device = (mcp23017_dev_t *) dev;
@@ -349,46 +339,31 @@ esp_err_t mcp23017_set_gpio_dir(mcp23017_pin_t gpio_num, mcp23017_gpio_mode_t mo
     }
     
     if(mode == MCP23017_GPIO_MODE_OUTPUT){
-        if(((1 << gpio_num) & io_set_dir_a)){ //0b00000010 & 0b11111111
-            ESP_LOGW(TAG, "não setado ainda");
-            ESP_LOGW(TAG, "io_set_dir_a: %d",io_set_dir_a);
-            ESP_LOGW(TAG, "mode << gpio_num: %d",(1 << gpio_num));
+        if(((1 << gpio_num) & io_set_dir_a)){ 
+            
             io_set_dir_a = io_set_dir_a - (1 << gpio_num);
-            ESP_LOGW(TAG, "new value: %d",io_set_dir_a);
 
             return i2c_bus_write_byte(p_device->i2c_dev,
                                     (gpio_port == MCP23017_GPIOA) ?
                                     MCP23017_REG_IODIRA : MCP23017_REG_IODIRB, io_set_dir_a);
-        }else{
-            ESP_LOGW(TAG, "ja setado");
         }
     }else if(mode == MCP23017_GPIO_MODE_INPUT){
-        if(!((1 << gpio_num) & io_set_dir_a)){ //0b00000010 & 0b11111111
-            ESP_LOGW(TAG, "não setado ainda");
-            ESP_LOGW(TAG, "io_set_dir_a: %d",io_set_dir_a);
-            ESP_LOGW(TAG, "mode << gpio_num: %d",(1 << gpio_num));
+        if(!((1 << gpio_num) & io_set_dir_a)){ 
+
             io_set_dir_a = io_set_dir_a + (1 << gpio_num);
-            ESP_LOGW(TAG, "new value: %d",io_set_dir_a);
 
             return i2c_bus_write_byte(p_device->i2c_dev,
                                     (gpio_port == MCP23017_GPIOA) ?
                                     MCP23017_REG_IODIRA : MCP23017_REG_IODIRB, io_set_dir_a);
-        }else{
-            ESP_LOGW(TAG, "ja setado");
         }
     }else if(mode == MCP23017_GPIO_MODE_INPUT_PULLUP){
-        if(!((1 << gpio_num) & io_set_dir_a)){ //0b00000010 & 0b11111111
-            ESP_LOGW(TAG, "não setado ainda");
-            ESP_LOGW(TAG, "io_set_dir_a: %d",io_set_dir_a);
-            ESP_LOGW(TAG, "mode << gpio_num: %d",(1 << gpio_num));
+        if(!((1 << gpio_num) & io_set_dir_a)){ 
+
             io_set_dir_a = io_set_dir_a + (1 << gpio_num);
-            ESP_LOGW(TAG, "new value: %d",io_set_dir_a);
 
             return i2c_bus_write_byte(p_device->i2c_dev,
                                     (gpio_port == MCP23017_GPIOA) ?
                                     MCP23017_REG_GPPUA : MCP23017_REG_GPPUB, io_set_dir_a);
-        }else{
-            ESP_LOGW(TAG, "ja setado");
         }
     }
 
@@ -438,28 +413,22 @@ esp_err_t mcp23017_set_gpio_level(mcp23017_pin_t gpio_num, mcp23017_gpio_state_t
     uint8_t io_write_gpio_port;
 
     if(level){
-        if(!((1 << gpio_num) & io_read_gpio_port)){ //0b01 & 0b01
-            ESP_LOGW(TAG, "não high ainda");
+        if(!((1 << gpio_num) & io_read_gpio_port)){ 
             io_write_gpio_port = io_read_gpio_port + (1 << gpio_num);
 
             return i2c_bus_write_byte(p_device->i2c_dev,
                                (gpio_port == MCP23017_GPIOA) ? MCP23017_REG_GPIOA : MCP23017_REG_GPIOB,
                                io_write_gpio_port);
-        }else{
-            ESP_LOGW(TAG, "ja high");
         }        
     }else{
         if(((1 << gpio_num) & io_read_gpio_port)){ //0b01 & 0b11
-            ESP_LOGW(TAG, "não low ainda");
             io_write_gpio_port = io_read_gpio_port - (1 << gpio_num);
 
             return i2c_bus_write_byte(p_device->i2c_dev,
                                (gpio_port == MCP23017_GPIOA) ? MCP23017_REG_GPIOA : MCP23017_REG_GPIOB,
                                io_write_gpio_port);
             
-        }else{
-            ESP_LOGW(TAG, "ja high");
-        } 
+        }
     }
 
     return ESP_OK;
@@ -524,7 +493,7 @@ uint8_t mcp23017_read_io(mcp23017_gpio_port_t gpio)
     return data;
 }
 
-uint16_t mcp23017_get_int_pin(mcp23017_handle_t dev)
+uint16_t mcp23017_get_int_pin()
 {
     MCP23017_CHECK(dev != NULL, "invalid arg", 0)
     mcp23017_dev_t *p_device = (mcp23017_dev_t *) dev;
@@ -551,7 +520,7 @@ uint16_t mcp23017_get_int_pin(mcp23017_handle_t dev)
     return pinValues;
 }
 
-uint16_t mcp23017_get_int_flag(mcp23017_handle_t dev)
+uint16_t mcp23017_get_int_flag()
 {
     MCP23017_CHECK(dev != NULL, "invalid arg", 0)
     mcp23017_dev_t *p_device = (mcp23017_dev_t *) dev;
@@ -563,7 +532,7 @@ uint16_t mcp23017_get_int_flag(mcp23017_handle_t dev)
     return pinIntfValues & p_device->intEnabledPins;
 }
 
-esp_err_t mcp23017_check_present(mcp23017_handle_t dev)
+esp_err_t mcp23017_check_present()
 {
     MCP23017_CHECK(dev != NULL, "invalid arg", ESP_ERR_INVALID_ARG)
     mcp23017_dev_t *p_device = (mcp23017_dev_t *) dev;

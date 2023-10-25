@@ -1,10 +1,3 @@
-/*
- * SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-
-
 #ifndef _MCP23017_H_
 #define _MCP23017_H_
 
@@ -23,8 +16,8 @@ static const char *TAG = "MCP23017";
 #define ACK_VAL                         0x0             /*!< I2C ack value */
 #define NACK_VAL                        0x1             /*!< I2C nack value */
 
-#define I2C_MASTER_SCL_IO           22          /*!< gpio number for I2C master clock IO21*/
-#define I2C_MASTER_SDA_IO           21          /*!< gpio number for I2C master data  IO15*/
+#define I2C_MASTER_SCL_IO           22          /*!< gpio number for I2C master clock*/
+#define I2C_MASTER_SDA_IO           21          /*!< gpio number for I2C master data*/
 #define I2C_MASTER_NUM              I2C_NUM_1   /*!< I2C port number for master dev */
 #define I2C_MASTER_TX_BUF_DISABLE   0           /*!< I2C master do not need buffer */
 #define I2C_MASTER_RX_BUF_DISABLE   0           /*!< I2C master do not need buffer */
@@ -79,8 +72,15 @@ extern "C"
 {
 #endif
 
-esp_err_t mcp23017_init();
-esp_err_t mcp23017_deinit();
+/**
+ * @brief Check device Present
+ *
+ * @return
+ *     - ESP_OK Success
+ *     - ESP_FAIL Fail
+ *     - ESP_ERR_INVALID_ARG Parameter error
+ */
+esp_err_t mcp23017_check_present();
 
 /**
  * @brief Create a MCP23017 device
@@ -106,11 +106,57 @@ mcp23017_handle_t mcp23017_create(i2c_bus_handle_t bus, uint8_t dev_addr);
 esp_err_t mcp23017_delete(mcp23017_handle_t *p_dev);
 
 /**
+ * @brief Deinit MCP23017
+ *
+ * @return
+ *     - ESP_OK Success
+ *     - ESP_FAIL Fail
+ */
+esp_err_t mcp23017_deinit();
+
+/**
+ * @brief read value of GPIO 
+ *
+ * @param gpio_num GPIO [0-15] of mcp23017 
+ *
+ * @return
+ *     - uint8_t value of level
+ */
+uint8_t mcp23017_get_gpio_level(mcp23017_pin_t gpio_num);
+
+/**
+ * @brief get interrupt flag of GPIO
+ *
+ * @return
+ *     - uint16_t value of GPIO interrupt flag
+ */
+uint16_t mcp23017_get_int_flag();
+
+/**
+ * @brief gets the interrupt capture values for pins with interrupts enabled,
+ *          and gpio values for the ones that aren't.
+ *          clear interrupt flag
+ *
+ * @return 
+ *     - uint16_t value of interrupt pin
+ */
+uint16_t mcp23017_get_int_pin();
+
+/**
+ * @brief Init MCP23017
+ *
+ * @return
+ *     - ESP_OK Success
+ *     - ESP_FAIL Fail
+ *     - ESP_ERR_INVALID_ARG Parameter error
+ */
+esp_err_t mcp23017_init();
+
+/**
  * @brief Set MCP23017 interrupt pin,
  *          Only in GPIO work in INPUT mode,
  *              Default:compare last value,
  *
- * @param dev device handle of MCP23017
  * @param pins pin of interrupt
  * @param intr_mode 0: compared against previous, 1: compared against DEFVAL register.
  * @param defaultValue pins default level
@@ -120,13 +166,11 @@ esp_err_t mcp23017_delete(mcp23017_handle_t *p_dev);
  *     - ESP_FAIL Fail
  *     - ESP_ERR_INVALID_ARG Parameter error
  */
-esp_err_t mcp23017_interrupt_en(mcp23017_handle_t dev, uint16_t pins,
-        bool intr_mode, uint16_t defaultValue);
+esp_err_t mcp23017_interrupt_en(uint16_t pins, bool intr_mode, uint16_t defaultValue);
 
 /**
  * @brief delete MCP23017 interrupt pin,
  *
- * @param dev device handle of MCP23017
  * @param pins pin of interrupt
  *
  * @return
@@ -134,12 +178,11 @@ esp_err_t mcp23017_interrupt_en(mcp23017_handle_t dev, uint16_t pins,
  *     - ESP_FAIL Fail
  *     - ESP_ERR_INVALID_ARG Parameter error
  */
-esp_err_t mcp23017_interrupt_disable(mcp23017_handle_t dev, uint16_t pins);
+esp_err_t mcp23017_interrupt_disable(uint16_t pins);
 
 /**
  * @brief Set the polarity of the INT output pin
  *
- * @param dev device handle of MCP23017
  * @param gpio pin of interrupt
  * @param chLevel interrupt polarity
  *
@@ -148,13 +191,11 @@ esp_err_t mcp23017_interrupt_disable(mcp23017_handle_t dev, uint16_t pins);
  *     - ESP_FAIL Fail
  *     - ESP_ERR_INVALID_ARG Parameter error
  */
-esp_err_t mcp23017_set_interrupt_polarity(mcp23017_handle_t dev,
-        mcp23017_gpio_port_t gpio, uint8_t chLevel);
+esp_err_t mcp23017_set_interrupt_polarity(mcp23017_gpio_port_t gpio, uint8_t chLevel);
 
 /**
  * @brief Sequential operation mode set
  *
- * @param dev device handle of MCP23017
  * @param isSeque 1:Prohibit sequential operation, the address pointer is not incremented
  *                  0:Enable sequential operation, address pointer increment
  *
@@ -163,12 +204,11 @@ esp_err_t mcp23017_set_interrupt_polarity(mcp23017_handle_t dev,
  *     - ESP_FAIL Fail
  *     - ESP_ERR_INVALID_ARG Parameter error
  */
-esp_err_t mcp23017_set_seque_mode(mcp23017_handle_t dev, uint8_t isSeque);
+esp_err_t mcp23017_set_seque_mode(uint8_t isSeque);
 
 /**
  * @brief Set MCP23017 pin pullup
  *
- * @param dev device handle of MCP23017
  * @param pins pin of pullup
  *
  * @return
@@ -179,43 +219,8 @@ esp_err_t mcp23017_set_seque_mode(mcp23017_handle_t dev, uint8_t isSeque);
 esp_err_t mcp23017_set_pullup(uint16_t pins);
 
 /**
- * @brief gets the interrupt capture values for pins with interrupts enabled,
- *          and gpio values for the ones that aren't.
- *          clear interrupt flag
- *
- * @param dev device handle of MCP23017
- *
- * @return 
- *     - uint16_t value of interrupt pin
- */
-uint16_t mcp23017_get_int_pin(mcp23017_handle_t dev);
-
-/**
- * @brief get interrupt flag of GPIO
- *
- * @param dev device handle of MCP23017
- *
- * @return
- *     - uint16_t value of GPIO interrupt flag
- */
-uint16_t mcp23017_get_int_flag(mcp23017_handle_t dev);
-
-/**
- * @brief Check device Present
- *
- * @param dev device handle of MCP23017
- *
- * @return
- *     - ESP_OK Success
- *     - ESP_FAIL Fail
- *     - ESP_ERR_INVALID_ARG Parameter error
- */
-esp_err_t mcp23017_check_present(mcp23017_handle_t dev);
-
-/**
  * @brief Set MCP23017 GPIOA/GPIOB Mirror:1:Interrupt inconnect; 0:not connect.
  *
- * @param dev device handle of MCP23017
  * @param mirror whether set up mirror interrupt
  * @param gpio select GPIOA/GPIOB
  *
@@ -224,31 +229,11 @@ esp_err_t mcp23017_check_present(mcp23017_handle_t dev);
  *     - ESP_FAIL Fail
  *     - ESP_ERR_INVALID_ARG Parameter error
  */
-esp_err_t mcp23017_mirror_interrupt(mcp23017_handle_t dev, uint8_t mirror,
-        mcp23017_gpio_port_t gpio);
-
-esp_err_t mcp23017_set_gpio_level(mcp23017_pin_t gpio_num, mcp23017_gpio_state_t level);
-
-/**
- * @brief write output value of GPIOA,(work in output)
- *
- * @param dev device handle of MCP23017
- * @param value value of GPIOX
- * @param gpio GPIO of mcp23017
- *
- * @return
- *     - ESP_OK Success
- *     - ESP_FAIL Fail
- *     - ESP_ERR_INVALID_ARG Parameter error
- */
-esp_err_t mcp23017_write_io(uint8_t value, mcp23017_gpio_port_t gpio);
-
-uint8_t mcp23017_get_gpio_level(mcp23017_pin_t gpio_num);
+esp_err_t mcp23017_mirror_interrupt(uint8_t mirror, mcp23017_gpio_port_t gpio);
 
 /**
  * @brief read value of REG_GPIOA/REG_GPIOB;Reflects the logic level on pin <7: 0>
  *
- * @param dev device handle of MCP23017
  * @param gpio GPIO of mcp23017
  *
  * @return
@@ -256,16 +241,55 @@ uint8_t mcp23017_get_gpio_level(mcp23017_pin_t gpio_num);
  */
 uint8_t mcp23017_read_io(mcp23017_gpio_port_t gpio);
 
+/**
+ * @brief set Direction of all GPIO;
+ *
+ * @param mode Mode Input/Input_Pullup or Output 
+ *
+ * @return
+ *     - NULL
+ */
 void mcp23017_set_all_gpio_dir(mcp23017_gpio_mode_t mode);
 
+/**
+ * @brief set level of GPIO;
+ *
+ * @param gpio_num GPIO [0-15] of mcp23017
+ * @param level MCP23017_GPIO_LOW or MCP23017_GPIO_HIGH
+ *
+ * @return
+ *     - ESP_OK Success
+ *     - ESP_FAIL Fail
+ *     - ESP_ERR_INVALID_ARG Parameter error
+ */
+esp_err_t mcp23017_set_gpio_level(mcp23017_pin_t gpio_num, mcp23017_gpio_state_t level);
+
+/**
+ * @brief set level of all GPIO;
+ *
+ * @param level MCP23017_GPIO_LOW or MCP23017_GPIO_HIGH
+ *
+ * @return
+ *     - NULL
+ */
 void mcp23017_set_all_gpio_level(mcp23017_gpio_state_t level);
 
+/**
+ * @brief set Direction of individual GPIO;
+ *
+ * @param gpio_num GPIO [0-15] of mcp23017
+ * @param mode Mode Input/Input_Pullup or Output 
+ *
+ * @return
+ *     - ESP_OK Success
+ *     - ESP_FAIL Fail
+ *     - ESP_ERR_INVALID_ARG Parameter error
+ */
 esp_err_t mcp23017_set_gpio_dir(mcp23017_pin_t gpio_num, mcp23017_gpio_mode_t mode);
 
 /**
  * @brief set Direction of GPIOA;Set the logic level on pin <7: 0>, 0 - output, 1 - input,
  *
- * @param dev device handle of MCP23017
  * @param value value of GPIOX
  * @param gpio GPIO of mcp23017
  *
@@ -275,6 +299,19 @@ esp_err_t mcp23017_set_gpio_dir(mcp23017_pin_t gpio_num, mcp23017_gpio_mode_t mo
  *     - ESP_ERR_INVALID_ARG Parameter error
  */
 esp_err_t mcp23017_set_io_dir(uint8_t value, mcp23017_gpio_mode_t mode, mcp23017_gpio_port_t gpio);
+
+/**
+ * @brief write output value of GPIOA,(work in output)
+ *
+ * @param value value of GPIOX
+ * @param gpio GPIO of mcp23017
+ *
+ * @return
+ *     - ESP_OK Success
+ *     - ESP_FAIL Fail
+ *     - ESP_ERR_INVALID_ARG Parameter error
+ */
+esp_err_t mcp23017_write_io(uint8_t value, mcp23017_gpio_port_t gpio);
 
 #ifdef __cplusplus
 }
