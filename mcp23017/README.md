@@ -1,8 +1,10 @@
 # Module mcp23017 example
-This example demonstrates how to use an mcp23017 module with an ESP device over an I2C interface
+This example demonstrates how to use an mcp23017 module with an ESP device over an I2C interface.
+
 This is based on the component developed by Espressif:
-https://github.com/espressif/esp-iot-solution/tree/8c7e1dfe1fdbc1a83e642921938c22949420373f/components/expander/io_expander/mcp23017
-With the addition of new functions for writing/reading individual GPIO [0-15] of the mcp23017 module
+https://github.com/espressif/esp-iot-solution/tree/8c7e1dfe1fdbc1a83e642921938c22949420373f/components/expander/io_expander/mcp23017.
+
+With the addition of new functions for writing/reading individual GPIO [0-15] of the mcp23017 module.
 
 ## Pin assignments
 The GPIO pin numbers used to connect an mcp23017 module can be customized. This can be done this way:
