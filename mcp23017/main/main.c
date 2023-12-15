@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "esp_log.h"
 #include "esp_timer.h"
-#include "mcp23017.h"
+#include "mcp23017_component.h"
 
 #define GPIO_BUTTON 7 //A7
 #define GPIO_LED 9   //B1

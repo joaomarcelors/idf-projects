@@ -1,4 +1,4 @@
-#include "mcp23017.h"
+#include "mcp23017_component.h"
 #include "esp_log.h"
 
 #define MCP23017_I2C_ADDRESS_DEFAULT   (0x20)           /*!< 0100A2A1A0+R/W */
