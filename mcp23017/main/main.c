@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "esp_log.h"
 #include "esp_timer.h"
 #include "mcp23017.h"
 
@@ -23,13 +24,13 @@ void app_main(void){
         uint8_t read_gpio = mcp23017_get_gpio_level(GPIO_BUTTON);
 
         //showing status 
-        ESP_LOGI(TAG, "BUTTON state: %d", read_gpio);
+        ESP_LOGI(__func__, "BUTTON state: %d", read_gpio);
 
         //changing the LED state to on/off every 1s without using delay
-        if ((esp_timer_get_time() - last_time ) > 1000000){
+        if ((esp_timer_get_time() - last_time ) > 500000){
             led_state = !led_state;
             mcp23017_set_gpio_level(GPIO_LED, led_state);
-            ESP_LOGI(TAG, "LED: %s", (led_state == 1? "On" : "Off"));
+            ESP_LOGI(__func__, "LED: %s", (led_state == 1? "On" : "Off"));
             last_time = esp_timer_get_time();
         }
 

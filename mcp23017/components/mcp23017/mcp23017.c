@@ -1,18 +1,39 @@
 #include "mcp23017.h"
+#include "esp_log.h"
+
+#define MCP23017_I2C_ADDRESS_DEFAULT   (0x20)           /*!< 0100A2A1A0+R/W */
+
+#define WRITE_BIT                       I2C_MASTER_WRITE/*!< I2C master write */
+#define READ_BIT                        I2C_MASTER_READ /*!< I2C master read */
+#define ACK_CHECK_EN                    0x1             /*!< I2C master will check ack from slave*/
+#define ACK_CHECK_DIS                   0x0             /*!< I2C master will not check ack from slave */
+#define ACK_VAL                         0x0             /*!< I2C ack value */
+#define NACK_VAL                        0x1             /*!< I2C nack value */
+
+#define I2C_MASTER_SCL_IO           22          /*!< gpio number for I2C master clock*/
+#define I2C_MASTER_SDA_IO           21          /*!< gpio number for I2C master data*/
+#define I2C_MASTER_NUM              I2C_NUM_1   /*!< I2C port number for master dev */
+#define I2C_MASTER_TX_BUF_DISABLE   0           /*!< I2C master do not need buffer */
+#define I2C_MASTER_RX_BUF_DISABLE   0           /*!< I2C master do not need buffer */
+#define I2C_MASTER_FREQ_HZ          100000      /*!< I2C master clock frequency */
 
 #define MCP23017_PORT_A_BYTE(x)         (x & 0xFF)                      //get pin of GPIOA
 #define MCP23017_PORT_B_BYTE(x)         (x >> 8)                        //get pin of GPIOB
 #define MCP23017_PORT_AB_WORD(buff)     (buff[0] | (buff[1] << 8))      //get pin of GPIOA and pin of GPIOB
 
 #define MCP23017_CHECK(a, str, ret) if(!(a)) { \
-        ESP_LOGE(TAG,"%s:%d (%s):%s", __FILE__, __LINE__, __FUNCTION__, str); \
+        ESP_LOGE(TAG_MCP23017,"%s:%d (%s):%s", __FILE__, __LINE__, __FUNCTION__, str); \
         return (ret); \
     }
 
 #define MCP23017_CHECK_GOTO(a, str, lable) if(!(a)) { \
-        ESP_LOGE(TAG,"%s:%d (%s):%s", __FILE__, __LINE__, __FUNCTION__, str); \
+        ESP_LOGE(TAG_MCP23017,"%s:%d (%s):%s", __FILE__, __LINE__, __FUNCTION__, str); \
         goto lable; \
     }
+
+static const char *TAG_MCP23017 = "MCP23017";
+static uint8_t io_set_dir_a = 0xff; //All input
+static uint8_t io_set_dir_b = 0xff; //All input
 
 /**
  * @brief register address when iocon.bank == 0 (default)
@@ -74,12 +95,12 @@ esp_err_t mcp23017_init()
     dev = mcp23017_create(i2c_bus, 0x20);
 
     if(i2c_bus == NULL){
-        ESP_LOGE(TAG, "Error i2c_bus");
+        ESP_LOGE(TAG_MCP23017, "Error i2c_bus");
         return ESP_FAIL;
     }
 
     if(dev == NULL){
-        ESP_LOGE(TAG, "Error device");
+        ESP_LOGE(TAG_MCP23017, "Error device");
         return ESP_FAIL;
     }
 
@@ -334,7 +355,7 @@ esp_err_t mcp23017_set_gpio_dir(mcp23017_pin_t gpio_num, mcp23017_gpio_mode_t mo
         gpio_num = gpio_num - 8;
         gpio_port = MCP23017_GPIOB;
     }else{
-        ESP_LOGE(TAG, "Error. Range Invalid!");
+        ESP_LOGE(TAG_MCP23017, "Error. Range Invalid!");
         return ESP_FAIL;
     }
     
@@ -399,7 +420,7 @@ esp_err_t mcp23017_set_gpio_level(mcp23017_pin_t gpio_num, mcp23017_gpio_state_t
         gpio_num = gpio_num - 8;
         gpio_port = MCP23017_GPIOB;
     }else{
-        ESP_LOGE(TAG, "Error. Range Invalid!");
+        ESP_LOGE(TAG_MCP23017, "Error. Range Invalid!");
         return ESP_FAIL;
     }
 
@@ -467,7 +488,7 @@ uint8_t mcp23017_get_gpio_level(mcp23017_pin_t gpio_num){
         gpio_num = gpio_num - 8;
         gpio_port = MCP23017_GPIOB;
     }else{
-        ESP_LOGE(TAG, "Error. Range Invalid!");
+        ESP_LOGE(TAG_MCP23017, "Error. Range Invalid!");
         return ESP_FAIL;
     }
 

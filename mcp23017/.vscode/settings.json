@@ -24,6 +24,19 @@
         "tuple": "c",
         "type_traits": "c",
         "utility": "c",
-        "esp_timer.h": "c"
+        "esp_timer.h": "c",
+        "eth_component.h": "c",
+        "ethernet_init.h": "c",
+        "string.h": "c",
+        "stdlib.h": "c",
+        "event_groups.h": "c",
+        "gpio.h": "c",
+        "stddef.h": "c",
+        "stdint.h": "c",
+        "esp_crt_bundle.h": "c",
+        "sys.h": "c",
+        "cjson.h": "c",
+        "esp_system.h": "c",
+        "ntp_component.h": "c"
     }
 }
